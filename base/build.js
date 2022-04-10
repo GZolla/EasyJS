@@ -3,7 +3,7 @@
 import { DOMOptions } from "./dom.js";
 
 /**
- * @typedef {import("./dom").DomOption} DOMOption
+ * @typedef {import("./dom").DOMOption} DOMOption
  */
 
 
@@ -211,7 +211,7 @@ export class BUILD {
          * @param {number} [checkedIndex] 
          */
         static radio(parent, name, options, onClick, inputOption={}, checkedIndex = -1) {
-            const domOption = new DOMOptions(parent).append();
+            const domOption = DOMOptions.append(parent);
             inputOption["option"] = domOption;
             inputOption["name"] = name
             for (let i = 0; i < options.length; i++) {

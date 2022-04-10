@@ -52,7 +52,7 @@ export function removeElement(element) {
 DOM OPTIONS: Options for inserting elements into the DOM
 ---------------------------------------------------------------------------------------------------- */
 /**
- * @typedef {Object} DomOption
+ * @typedef {Object} DOMOption
  * @property {domOptionCallback} callback
  * @property {Element} reference
  */
@@ -60,57 +60,56 @@ DOM OPTIONS: Options for inserting elements into the DOM
 export class DOMOptions {
 
     /**
-     * Create DOMOptions for reference element
-     * @param {Element} referenceElement 
-     */
-    constructor(referenceElement) {
-        this.reference = referenceElement;
-    }
-
-    /**
      * Returns a DomOption with custom callback
+     * @param {Element} referenceElement
      * @param {domOptionCallback} callback
-     * @returns {DomOption} 
+     * @returns {DOMOption} 
      */
-    custom(callback) {
+    static custom(referenceElement,callback) {
         return {
             callback:callback,
-            reference:this.reference,
+            reference:referenceElement,
         }
     }
 
 
     /**
      * Append into reference element
-     * @returns {DomOption}
+     * @param {Element} referenceElement 
+     * @returns {DOMOption}
      */
-    append() {
-        return this.custom((element, reference)=>{reference.appendChild(element)});
+    static append(referenceElement) {
+        return this.custom(referenceElement,(e, r)=>{r.appendChild(e)});
     }
 
 
     /**
      * Insert before reference element
-     * @returns {DomOption}
+     * @param {Element} referenceElement 
+     * @returns {DOMOption}
      */
-    before() {
-        return this.custom(insertBefore);
+    static before = (referenceElement) => {
+        return this.custom(referenceElement, insertBefore);
     }
 
 
     /**
      * Insert after reference element
+     * @param {Element} referenceElement 
+     * @returns {DOMOption}
      */
-    after() {
-        return this.custom(insertAfter); 
+    static after(referenceElement) {
+        return this.custom(referenceElement,insertAfter); 
     }
 
 
     /**
      * Insert as first child of reference element
+     * @param {Element} referenceElement 
+     * @returns {DOMOption}
      */
-    first() {
-        return this.custom(insertFirst);
+    static first(referenceElement) {
+        return this.custom(referenceElement,insertFirst);
     }
 }
 

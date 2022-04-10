@@ -13,14 +13,13 @@ import {DOMOptions} from "../dom.js"
 function buildElements() {
     /** @type {(keyof HTMLElementTagNameMap)[]} */
     const elementList = ["span","div","p","article"]
-    let option = (new DOMOptions(document.body)).append()
+    let option = DOMOptions.append(document.body);
     for (let i = 0; i < elementList.length; i++) {
         const element = BUILD.element(elementList[i], "insertedElement", option);
         element.innerHTML = "Element " + i + ": " + elementList[i];
-        const options = new DOMOptions(element);
-        option = i == 0 ? options.before()
-                : i == 1 ? options.after()
-                :new DOMOptions(document.body).first()
+        option = i == 0 ? DOMOptions.before(element)
+                : i == 1 ? DOMOptions.after(element)
+                :DOMOptions.first(document.body)
     }
 }
 
@@ -41,7 +40,7 @@ function buildInputs() {
     /** @type {import("../build.js").InputType[]} */
     const inputTypes = ["button", "checkbox", "color", "date", "datetime-local", "email", "file", "hidden", "image", "month", "number", "password", "radio", "range", "reset", "search", "submit", "tel", "text", "time", "url", "week"]
     
-    const bodyAppend = new DOMOptions(document.body).append();
+    const bodyAppend = DOMOptions.append(document.body);
 
     BUILD.input.text("password",{
         "className":"text_classname",
