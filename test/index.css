@@ -1,0 +1,20 @@
+body {
+    margin:0;
+    padding: 0;
+    font-family: "Arial", sans-serif
+}
+.test {
+    display: block;
+    width:100%;
+    padding: 1em;
+}
+.test h2 {
+    margin:0;
+}
+.succeeded {
+    background-color: #0a6;
+}
+.failed {
+    background-color: red;
+    color:white
+}
