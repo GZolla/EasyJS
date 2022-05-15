@@ -1,10 +1,6 @@
 // @ts-check
 
-import { DOMOptions } from "./dom.js";
-
-/**
- * @typedef {import("./dom").DOMOption} DOMOption
- */
+import { DOMOptions,DOMOption } from "./dom.js";
 
 
 
@@ -38,7 +34,7 @@ Create Elements
  */
 export class BUILD {
     /**
-     * 
+     * Creates an element of the given tag
      * @param {keyof HTMLElementTagNameMap} tag 
      * @param {string} className 
      * @param {DOMOption} [option] 
@@ -47,8 +43,25 @@ export class BUILD {
     static element(tag, className = "", option) {
         const element = document.createElement(tag);
         element.className = className;
-        if(option != null) option.callback(element, option.reference);
+        if(option != null) option.apply(element, option.referenceElement);
         return element;
+    }
+
+    /* ----------------------------------------------------------------------------------------------------
+    Common elements
+    ---------------------------------------------------------------------------------------------------- */
+
+    /**
+     * Creates an img element with given src
+     * @param {string} src 
+     * @param {string} alt 
+     * @param {string} className 
+     * @param {DOMOption} [option] 
+     */
+    static img(src, alt, className = "",option) {
+        const img =/**@type {HTMLImageElement}*/ (BUILD.element("img",className,option));
+        img.src = src;
+        img.alt = alt;
     }
 
     /* ----------------------------------------------------------------------------------------------------

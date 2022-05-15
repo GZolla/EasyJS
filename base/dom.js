@@ -51,11 +51,17 @@ export function removeElement(element) {
 /* ----------------------------------------------------------------------------------------------------
 DOM OPTIONS: Options for inserting elements into the DOM
 ---------------------------------------------------------------------------------------------------- */
-/**
- * @typedef {Object} DOMOption
- * @property {domOptionCallback} callback
- * @property {Element} reference
- */
+export class DOMOption {
+    /**
+     * Builds a DOM insertion option
+     * @param {Element} referenceElement
+     * @param {domOptionCallback} apply
+     */
+    constructor(referenceElement, apply) {
+        this.referenceElement = referenceElement;
+        this.apply = apply;
+    }
+}
 
 export class DOMOptions {
 
@@ -66,10 +72,7 @@ export class DOMOptions {
      * @returns {DOMOption} 
      */
     static custom(referenceElement,callback) {
-        return {
-            callback:callback,
-            reference:referenceElement,
-        }
+        return new DOMOption(referenceElement,callback);
     }
 
 

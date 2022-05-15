@@ -128,10 +128,13 @@ Loader
  * Load css from path, assigningit a unique id, fails if element with id exists
  * @param {string} id Unique id of the stylesheet
  * @param {string} path path from EasyJs container to css
+ * @param {boolean} force Delete item with id if it exists
  */
- export function loadCSS(id, path) {
-    if (!document.getElementById(id))
+ export function loadCSS(id, path, force = false) {
+    const prev = document.getElementById(id); 
+    if (force || !prev)
     {
+        if(prev) prev.parentElement.removeChild(prev);
         var head  = document.getElementsByTagName('head')[0];
         var link  = document.createElement('link');
         link.id   = id;
