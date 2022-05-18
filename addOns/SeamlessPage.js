@@ -16,9 +16,9 @@ export default class SeamlessPage {
 
     
     /**
-     * 
+     * Set the SeamlessPage with the given states, reset function and initial state
      * @param {Object.<string,State>} states A map of state keys and their rendering functions;
-     * @param {string} initState The initial state to load
+     * @param {string} initState The initial state to load(Won't create a history navigation)
      * @param {function} resetCallback The callback to run whenever a new state is rendered
      */
     static set(states, initState, resetCallback) {
