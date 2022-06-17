@@ -11,8 +11,8 @@
  * A seamless page loader
  */
 export default class SeamlessPage {
-    /**@type {Object.<string, State>} */ static states = null;
-    /**@type {function}  */ static reset = null;
+    /**@type {Object.<string, State>?} */ static states = null;
+    /**@type {function}  */ static reset = ()=>{};
 
     
     /**
@@ -40,11 +40,14 @@ export default class SeamlessPage {
     }
 
     /**
-     * if stateKey is invalid, throw error
+     * If states are not set or stateKey is invalid, throw error, otherwise return State
      * @param {string} stateKey 
+     * @returns {State} State of given key
      */
     static checkStateValidity(stateKey) {
-        if(!(this.states && stateKey in this.states)) throw new Error("Invalid State, given key must be in states");
+        if(this.states == null) throw new Error("States has not been set, call set() to do so.");
+        if(!(stateKey in this.states)) throw new Error("Invalid State, given key must be in set states");
+        return this.states[stateKey];
     }
 
     /**
@@ -53,8 +56,8 @@ export default class SeamlessPage {
      * @param {boolean} navigate Wether the loading should create a state in the history
      */
     static loadState(stateKey, navigate = true) {
-        this.checkStateValidity(stateKey);
-        window.history[navigate ? "pushState" : "replaceState"]({stateKey:stateKey},"",this.states[stateKey].url)
+        const state = this.checkStateValidity(stateKey);
+        window.history[navigate ? "pushState" : "replaceState"]({stateKey:stateKey},"",state.url)
         
         this.renderState(stateKey)
     }
@@ -64,9 +67,9 @@ export default class SeamlessPage {
      * @param {string} stateKey The key of the state to render
      */
     static renderState(stateKey) {
-        this.checkStateValidity(stateKey);
+        const state = this.checkStateValidity(stateKey);
         this.reset();
-        this.states[stateKey].renderer();
+        state.renderer();
     }
 
     
