@@ -1,7 +1,7 @@
 // @ts-check
 import "../index.js"
 import {API} from "../../addOns/API.js"
-import Test from "../index.js"
+import Test from "../../addOns/Test.js"
 
 /* ----------------------------------------------------------------------------------------------------
 Types

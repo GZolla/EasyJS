@@ -1,7 +1,7 @@
 // @ts-check
 
 import StringUtils from "../../base/string.js"
-import Test from "../index.js"
+import Test from "../../addOns/Test.js"
 
 Test.function(StringUtils.fillString,
     [ // Inputs
@@ -67,10 +67,10 @@ Test.function(StringUtils.wordToTitleCase,
         ["aBBBBBBB"]
     ],
     [ // Expecteds
-        [""],
-        ["Abc"],
-        ["!b!c"],
-        ["Abbbbbbb"]
+        "",
+        "Abc",
+        "!b!c",
+        "Abbbbbbb"
     ],
     Test.isEqual
 )
