@@ -149,12 +149,13 @@ export class BUILD {
         /**
          * Build clickable 
          * @param {InputType} type 
-         * @param {eventCallback} onClick 
-         * @param {InputOptions} options 
+         * @param {eventCallback} [onClick] 
+         * @param {InputOptions} [options] 
          */
         static clickable(type, onClick, options={}) {
+
             if(onClick != null) {
-                if("events" in options) {
+                if(options["events"]) {
                     options["events"].push({
                         handler: onClick,
                         event:"click"

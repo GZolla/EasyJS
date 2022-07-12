@@ -134,7 +134,7 @@ Loader
     const prev = document.getElementById(id); 
     if (force || !prev)
     {
-        if(prev) prev.parentElement.removeChild(prev);
+        if(prev && prev.parentElement) prev.parentElement.removeChild(prev);
         var head  = document.getElementsByTagName('head')[0];
         var link  = document.createElement('link');
         link.id   = id;

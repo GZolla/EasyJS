@@ -17,6 +17,7 @@ DOM Handling Functions
  * @param {Element} reference Reference Element
  */
 export function insertAfter(element, reference) {
+    if(!reference.parentNode) throw new Error("Not in  DOM");
     reference.parentNode.insertBefore(element, reference.nextElementSibling)
 }
 
@@ -26,6 +27,7 @@ export function insertAfter(element, reference) {
  * @param {Element} reference Reference Element
  */
 export function insertBefore(element, reference) {
+    if(!reference.parentNode) throw new Error("Not in  DOM");
     reference.parentNode.insertBefore(element, reference)
 }
 
@@ -43,7 +45,7 @@ export function insertFirst(element, reference) {
  * @param {Element} element
  */
 export function removeElement(element) {
-    if(element != null) {
+    if(element != null && element.parentNode) {
         element.parentNode.removeChild(element)
     }
 }
