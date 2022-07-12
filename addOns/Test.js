@@ -194,4 +194,20 @@ export default class Test {
         }
         return null
     }
+
+    /**
+     * Check that two arrays are equal in any order
+     * @template {*[]} Input
+     * @template {any} T
+     * @type {ActualExpectInput<T[], T[], Input>}
+     */
+    static isEqualDisordered(actual, expected, input, parent) {
+        if(actual.length != expected.length) return "Arrays have different lengths.";
+        for (let i = 0; i < expected.length; i++) {
+            const indexInActual = actual.indexOf(expected[i]);
+            if(indexInActual < 0) return `Expected actual to include ${expected[i]}`;
+            actual.splice(indexInActual,1);
+        }
+        return null;
+    }
 }
