@@ -36,6 +36,7 @@ export default class Test {
      * @param {Expected} expected
      * @param {Input} input
      * @param {HTMLElement} parent
+     * @param {number} [index]
      * @return {string | null | Promise<string | null>}  
      */
 
@@ -64,7 +65,7 @@ export default class Test {
         var actuals = await Promise.all(inputs.map((inp) => process(...inp)));
         for (let i = 0; i < inputs.length; i++) {
 
-            const errorOrNull = await check(actuals[i],expecteds[i],inputs[i], container);
+            const errorOrNull = await check(actuals[i],expecteds[i],inputs[i], container,i);
             if(errorOrNull == null) successes++
             else if(errorOrNull != "") {
                 const errorDisplay = BUILD.element("li","failed",appendContainer)
@@ -98,9 +99,10 @@ export default class Test {
      * @param {ActualExpectInput<Output, Expected, Input>} testConstruction 
      * @param {InstanceFunctionTest<*[],*,*>[]} functionTests 
      * @param {HTMLElement} parent 
+     * @param {number} [index]
      * @return {Promise<boolean>}
      */
-    static async instance(instance, expected, input, testConstruction, functionTests, parent) {
+    static async instance(instance, expected, input, testConstruction, functionTests, parent,index) {
         const container = BUILD.element("div","test",DOMOptions.append(parent));
         const appendContainer = DOMOptions.append(container);
         const title = BUILD.element("h2","test_title",appendContainer);
@@ -108,7 +110,7 @@ export default class Test {
         const constTitle = BUILD.element("h3","test_title",appendContainer);
         constTitle.innerHTML = "Constructor:"
 
-        const constructionError = await testConstruction(instance, expected,input,parent)
+        const constructionError = await testConstruction(instance, expected,input,parent,index)
         if (constructionError) {
             const errorDisplay = BUILD.element("li","failed",appendContainer)
             container.classList.add("failed")
@@ -155,9 +157,10 @@ export default class Test {
             (...inp)=> new constructor(...inp),
             inputs,
             expecteds,
-            async (actual, expected, input, parent)=>{
-                return (await Test.instance(actual,expected,input,testConstruction,functionTests,parent)) ? null : ""
-            }
+            async (actual, expected, input, parent,index)=>{
+                return (await Test.instance(actual,expected,input,testConstruction,functionTests,parent,index)) ? null : ""
+            },
+            parent
         )
     }
 
@@ -171,7 +174,7 @@ export default class Test {
      * @template {string | number} T
      * @type {ActualExpectInput<T, T, Input>}
      */
-    static isEqual(actual, expected, input, parent) {
+    static isEqual(actual, expected) {
         if(actual === expected) return null
         return `Expected {${actual}} to be {${expected}}`
     }
@@ -183,13 +186,13 @@ export default class Test {
      * @template {*[]} Input
      * @type {ActualExpectInput<Object.<string,any>, Object.<string,any>, Input>}
      */
-    static isDeepEqual(actual, expected, input, parent) {
+    static isDeepEqual(actual, expected) {
         for (const key in expected) {
             if(!(key in actual)) return "Actual is missing key: " + key
             const expectedType = typeof expected[key]
             if(typeof actual[key] != expectedType) return `Type mismatch: ${key} should ${expectedType} but is ${typeof actual[key]}`
-            const error =expectedType == "object"? Test.isDeepEqual(actual[key],expected[key],input,parent)
-                                                    : Test.isEqual(actual[key],expected[key],input,parent)
+            const error =expectedType == "object"? Test.isDeepEqual(actual[key],expected[key])
+                                                    : Test.isEqual(actual[key],expected[key])
             if(error) return error
         }
         return null
@@ -201,7 +204,7 @@ export default class Test {
      * @template {any} T
      * @type {ActualExpectInput<T[], T[], Input>}
      */
-    static isEqualDisordered(actual, expected, input, parent) {
+    static isEqualDisordered(actual, expected) {
         if(actual.length != expected.length) return "Arrays have different lengths.";
         for (let i = 0; i < expected.length; i++) {
             const indexInActual = actual.indexOf(expected[i]);

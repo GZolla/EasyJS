@@ -98,8 +98,8 @@ const APIFunctionTests = [
 
 
 Test.class(API,APIInputs,APIExpecteds,
-    (actual, expected, input, parent) => {
-        const sameId = Test.isEqual(actual.id,expected.id,input,parent);
+    (actual, expected) => {
+        const sameId = Test.isEqual(actual.id,expected.id);
         if(sameId) return sameId
         
         return null
