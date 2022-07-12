@@ -3,7 +3,8 @@
 import { BUILD } from "../base/build.js";
 import { loadCSS } from "../base/css.js";
 import { DOMOption, DOMOptions } from "../base/dom.js";
-loadCSS("testCss","test/index.css");
+import { PATH_TO_EJS } from "../settings.js";
+loadCSS("testCss",PATH_TO_EJS + "Test.css");
 
 /* ----------------------------------------------------------------------------------------------------
 Basic testers
