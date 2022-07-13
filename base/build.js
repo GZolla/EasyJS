@@ -43,7 +43,7 @@ export class BUILD {
     static element(tag, className = "", option) {
         const element = document.createElement(tag);
         element.className = className;
-        if(option != null) option.apply(element, option.referenceElement);
+        if(option != null) option.apply(element);
         return element;
     }
 
@@ -67,16 +67,17 @@ export class BUILD {
     /* ----------------------------------------------------------------------------------------------------
     Inputs
     ---------------------------------------------------------------------------------------------------- */
+    /**
+     * @typedef {Object} InputOptions
+     * @property {string} [className]
+     * @property {DOMOption} [option]
+     * @property {string} [name]
+     * @property {string} [value]
+     * @property {EventHandler} [event]
+     * @property {EventHandler[]} [events]
+     */
     static input = class {
-        /**
-         * @typedef {Object} InputOptions
-         * @property {string} [className]
-         * @property {DOMOption} [option]
-         * @property {string} [name]
-         * @property {string} [value]
-         * @property {EventHandler} [event]
-         * @property {EventHandler[]} [events]
-         */
+        
 
         /**
          * Build input element
@@ -255,5 +256,46 @@ export class BUILD {
 
         //TODO: "file" | "date" | "datetime-local" | "month" | "time" | "week"
 
+    }
+
+
+    /* ----------------------------------------------------------------------------------------------------
+    SVG
+    ---------------------------------------------------------------------------------------------------- */
+
+    /** @typedef {keyof SVGElementTagNameMap} SVGTag */
+
+    /**
+     * Creates an SVG element of the given tag
+     * @param {SVGTag} tag 
+     * @param {Object.<string,string>} attributes 
+     * @param {DOMOption} [option] 
+     * @returns {SVGElement}
+     */
+     static svgElement(tag, attributes = {}, option) {
+        const element = document.createElementNS("http://www.w3.org/2000/svg",tag)
+        for (const attribute in attributes) {
+            element.setAttribute(attribute,attributes[attribute]);
+        }
+        if(option) option.apply(element)
+
+        return element
+    }
+
+
+    /**
+     * Create an SVG element with the given elements created inside
+     * @param {[SVGTag,Object.<string,string>][]} elements 
+     * @param {[number,number,number,number]} viewBox
+     * @param {DOMOption} [option]
+     * @returns {SVGElement}
+     */
+    static svgIcon(elements, viewBox, option) {
+        const svg = BUILD.svgElement("svg",{"viewBox":viewBox.join(" ")}, option)
+        const appendToIcon = DOMOptions.append(svg);
+        for (const att of elements) {
+            BUILD.svgElement(att[0],att[1],appendToIcon);
+        }
+        return svg;
     }
 }
