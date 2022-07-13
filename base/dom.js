@@ -57,11 +57,19 @@ export class DOMOption {
     /**
      * Builds a DOM insertion option
      * @param {Element} referenceElement
-     * @param {domOptionCallback} apply
+     * @param {domOptionCallback} callback
      */
-    constructor(referenceElement, apply) {
+    constructor(referenceElement, callback) {
         this.referenceElement = referenceElement;
-        this.apply = apply;
+        this.callback = callback;
+    }
+
+    /**
+     * Apply option to element
+     * @param {Element} element 
+     */
+    apply(element) {
+        this.callback(element,this.referenceElement)
     }
 }
 
