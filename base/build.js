@@ -286,12 +286,13 @@ export class BUILD {
     /**
      * Create an SVG element with the given elements created inside
      * @param {[SVGTag,Object.<string,string>][]} elements 
+     * @param {string} className
      * @param {[number,number,number,number]} viewBox
      * @param {DOMOption} [option]
      * @returns {SVGElement}
      */
-    static svgIcon(elements, viewBox, option) {
-        const svg = BUILD.svgElement("svg",{"viewBox":viewBox.join(" ")}, option)
+    static svgIcon(elements, className, viewBox, option) {
+        const svg = BUILD.svgElement("svg",{viewBox:viewBox.join(" "),class:className}, option)
         const appendToIcon = DOMOptions.append(svg);
         for (const att of elements) {
             BUILD.svgElement(att[0],att[1],appendToIcon);
