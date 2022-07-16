@@ -41,6 +41,28 @@ export default class Test {
      * @return {string | null | Promise<string | null>}  
      */
 
+    /**
+     * @template {*[]} Input
+     * @template {*} Output
+     * @template {*} Expected
+     * @param {ActualExpectInput<Output,Expected,Input>} check
+     * @param {Output} actual
+     * @param {Expected} expected
+     * @param {Input} input
+     * @param {HTMLElement} parent
+     * @param {number} [index]
+     * @return {Promise<string | null>}  
+     */
+    static async errorSafeCheck(check,actual, expected,input,parent,index) {
+        try {
+            return await check(actual,expected,input, parent,index);
+        } catch (error) {
+            if(typeof error ==="object" && error instanceof Error) return error.message;
+            return error + "";
+        }
+    }
+
+
     
 
     
@@ -65,8 +87,7 @@ export default class Test {
         var successes = 0;
         var actuals = await Promise.all(inputs.map((inp) => process(...inp)));
         for (let i = 0; i < inputs.length; i++) {
-
-            const errorOrNull = await check(actuals[i],expecteds[i],inputs[i], container,i);
+            const errorOrNull = await Test.errorSafeCheck(check,actuals[i],expecteds[i],inputs[i], container,i);
             if(errorOrNull == null) successes++
             else if(errorOrNull != "") {
                 const errorDisplay = BUILD.element("li","failed",appendContainer)
@@ -111,7 +132,7 @@ export default class Test {
         const constTitle = BUILD.element("h3","test_title",appendContainer);
         constTitle.innerHTML = "Constructor:"
 
-        const constructionError = await testConstruction(instance, expected,input,parent,index)
+        const constructionError = await Test.errorSafeCheck(testConstruction,instance,expected,input,container);
         if (constructionError) {
             const errorDisplay = BUILD.element("li","failed",appendContainer)
             container.classList.add("failed")
@@ -204,14 +225,22 @@ export default class Test {
      * @template {*[]} Input
      * @template {any} T
      * @type {ActualExpectInput<T[], T[], Input>}
+     * @return {string | null}
      */
     static isEqualDisordered(actual, expected) {
-        if(actual.length != expected.length) return "Arrays have different lengths.";
+        const actual_clone = [...actual];
+        const missing = [];
+
+        if(actual_clone.length != expected.length) return "Arrays have different lengths.";
         for (let i = 0; i < expected.length; i++) {
-            const indexInActual = actual.indexOf(expected[i]);
-            if(indexInActual < 0) return `Expected actual to include ${expected[i]}`;
-            actual.splice(indexInActual,1);
+            const indexInActual = actual_clone.indexOf(expected[i]);
+            if(indexInActual < 0) missing.push(expected[i]);
+            else actual_clone.splice(indexInActual,1);
         }
+        if(missing.length || actual_clone.length) {
+            return `Missing: ${missing}<br> Surplus: ${actual_clone}`;
+        }
+        
         return null;
     }
 }
