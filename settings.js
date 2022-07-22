@@ -2,4 +2,4 @@
 
 // Use to load CSS Files
 export const STATIC_PATH = "/"
-export const PATH_TO_EJS = "EasyJS/"
+export const PATH_TO_EJS = ""
