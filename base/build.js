@@ -264,6 +264,7 @@ export class BUILD {
     ---------------------------------------------------------------------------------------------------- */
 
     /** @typedef {keyof SVGElementTagNameMap} SVGTag */
+    
 
     /**
      * Creates an SVG element of the given tag
@@ -289,10 +290,11 @@ export class BUILD {
      * @param {string} className
      * @param {[number,number,number,number]} viewBox
      * @param {DOMOption} [option]
+     * @param {Object<string,string>} [attributes]
      * @returns {SVGElement}
      */
-    static svgIcon(elements, className, viewBox, option) {
-        const svg = BUILD.svgElement("svg",{viewBox:viewBox.join(" "),class:className}, option)
+     static svgIcon(elements, className, viewBox, option, attributes) {
+        const svg = BUILD.svgElement("svg",{viewBox:viewBox.join(" "),class:className, ...attributes}, option)
         const appendToIcon = DOMOptions.append(svg);
         for (const att of elements) {
             BUILD.svgElement(att[0],att[1],appendToIcon);
