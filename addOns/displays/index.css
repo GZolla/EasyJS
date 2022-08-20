@@ -1,0 +1,13 @@
+.ejs-carrousel-header {
+    cursor: pointer;
+}
+.ejs-carrousel-content {
+    max-height: 0;
+    transition: max-height 0.15s ease-out;
+    overflow: hidden;
+}
+
+.ejs-carrousel-open > .ejs-carrousel-content {
+    max-height: 100vh;
+    transition: max-height 0.25s ease-in;
+}
