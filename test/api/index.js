@@ -1,6 +1,6 @@
 // @ts-check
 import {API} from "../../addOns/API.js"
-import {Test,ClassTest} from "../../testing/index.js"
+import {Test,ClassTest} from "../../addOns/testing/testing.js"
 
 const APITest = new ClassTest(API,true);
 await APITest.runTests(
