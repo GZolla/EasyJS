@@ -50,6 +50,18 @@ export function removeElement(element) {
     }
 }
 
+/**
+ * Remove all elements in array given
+ * @param {Element[] | HTMLCollection} elements 
+ */
+export function removeElements(elements) {
+    if(elements instanceof HTMLCollection) elements = [...elements];
+    
+    for (const element of elements) {
+        removeElement(element)
+    }
+}
+
 /* ----------------------------------------------------------------------------------------------------
 DOM OPTIONS: Options for inserting elements into the DOM
 ---------------------------------------------------------------------------------------------------- */

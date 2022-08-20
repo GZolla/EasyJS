@@ -83,7 +83,7 @@ export class API {
         this.method = method
 
         this.id = API.getUniqueID(id)
-        API.BASES[id] = this
+        API.BASES[this.id] = this
 
 
         this.loading_data = loading_data
@@ -154,6 +154,15 @@ export class API {
      */
     static async sendRequestByIdCallback(id,data, callback) {
         callback(this.sendRequestById(id, data) )
+    }
+
+    /**
+     * Delete API with given id
+     * @param {string} id 
+     */
+    static removeById(id){
+        if(!(id in this.BASES)) throw new Error("API with given id was not found")
+        delete this.BASES[id]
     }
 
     /* ----------------------------------------------------------------------------------------------------
