@@ -5,7 +5,7 @@ import { BUILD } from "../../base/build.js";
 import { DOMOption, DOMOptions, removeElements } from "../../base/dom.js";
 import {loadCSS} from "../../base/css.js"
 import {PATH_TO_EJS} from "../../settings.js"
-loadCSS("testCss",PATH_TO_EJS + "testing/Test.css");
+loadCSS("testCss",PATH_TO_EJS + "addOns/testing/index.css");
 
 /**
  * @template {*[]} Input
@@ -122,7 +122,7 @@ export class Test {
 
     /**
      * Checks that actual and expected are equal using the === operator
-     * @template {string | number} T
+     * @template {any} T
      * @type {TestCallbackChecker<any, T,T>}
      */
      static isEqual(actual, expected) {
@@ -166,6 +166,15 @@ export class Test {
             return `Missing: ${missing}<br> Surplus: ${actual_clone}`;
         }
         
+        return null;
+    }
+
+    /**
+     * Just pass
+     * @template {*} T
+     * @type {TestCallbackChecker<*, Array<T>, Array<T>>}
+     */
+    static pass() {
         return null;
     }
 
@@ -312,6 +321,7 @@ export class ClassTest extends Test {
      */
      async runTests(cases, checkFunction, expectException = false, ider = (inp)=>inp+"") {
         this.instances = [];
+        this.lastFunctionTests = {};
         return super.runTests(cases,async (actual, expected,input,index)=>{
             this.instances.push(actual);
             return checkFunction(actual,expected,input,index)
@@ -349,7 +359,7 @@ export class ClassTest extends Test {
 
             const results = instanceCheck.runTests(checks.map(({input,expecteds})=>{
                 return {input:input,expected:expecteds[i]};
-            }),checkFunction,expectException);
+            }),checkFunction.bind(instance),expectException);
             if(!this.parallelize) await results;
             messages.push(
                 results

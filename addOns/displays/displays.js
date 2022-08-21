@@ -3,7 +3,8 @@
 import { BUILD } from "../../base/build.js";
 import { loadCSS } from "../../base/css.js";
 import { DOMOptions, DOMOption, removeElement } from "../../base/dom.js";
-loadCSS("ejs-displays","addOns/displays/index.css");
+import { PATH_TO_EJS } from "../../settings.js";
+loadCSS("ejs-displays",PATH_TO_EJS + "addOns/displays/index.css");
 
 export class Dropdown {
     static OPEN_CLASSNAME = "ejs-carrousel-open";
