@@ -1,6 +1,10 @@
 //@ts-check
-
 import { STATIC_PATH } from "../settings.js";
+
+/**
+ * CSS helper functions
+ * @module CSS
+ */
 
 /* ----------------------------------------------------------------------------------------------------
 Settings
@@ -172,8 +176,11 @@ function getPositionOffset(element, position, preventOverflow, isHorizontal = tr
 
     const min_padding = unitValueToPixels(MIN_PADDING,element, !isHorizontal);
     if (size > containerSize - 2 * min_padding) return min_padding; // position at 0 if overflow cannot be prevented
-    if (position + size <= containerSize - min_padding) return position; // position normally if element fits container at position
-    if (position >= size + min_padding) return position - containerSize; // place before position if that prevents overflow
+    const spaceBefore = min_padding + size <= position;
+    const spaceAfter = position + size <= containerSize - min_padding
+
+    if (isHorizontal ? spaceAfter : !spaceBefore) return position; // position normally if element fits container at position
+    if (spaceBefore) return position - containerSize; // place before position if that prevents overflow
     return containerSize - min_padding - size; // otherwise place at bottom
 }
 
@@ -201,9 +208,9 @@ export function positionOnViewport(element, coordinate, isLeft, isTop, unit = "p
  * @param {MouseEvent} e 
  */
 export function positionOnMouse({element, preventOverflow = false}, e) {
-
+    document.body.appendChild(element);
     const x = getPositionOffset(element, e.clientX + e.movementX, preventOverflow);
-    const y = getPositionOffset(element, e.clientY + e.movementY, preventOverflow, true);
+    const y = getPositionOffset(element, e.clientY + e.movementY, preventOverflow, false);
     const coordinate = {
         x: Math.abs(x),
         y: Math.abs(y)
@@ -241,12 +248,11 @@ export function positionRelative(referenceElement, element, position) {
     const widthDifference = (referenceElement.offsetWidth - element.offsetWidth) / 2;
     const heightDifference = (referenceElement.offsetHeight - element.offsetHeight) / 2;
 
-    /** @type {UnitValue}*/
-    const xOffset = position!="right" && position != "left" ? {value: widthDifference,unit:"px"}
-                                                                : {value:100, unit:"%"}
-
-    /** @type {UnitValue}*/
-    const yOffset = position != "above" && position != "below" ? {value: heightDifference,unit:"px"}
-                                                                : {value:100, unit:"%"}
-    positionRelativeOffset(referenceElement,element,xOffset, yOffset,position != "right",position != "below")
+    positionRelativeOffset(
+        referenceElement,
+        element,
+        position!="right" && position != "left" ? {value: widthDifference,unit:"px"} : {value:100, unit:"%"}, 
+        position != "above" && position != "below" ? {value: heightDifference,unit:"px"} : {value:100, unit:"%"},
+        position != "right",position != "below"
+    )
 }

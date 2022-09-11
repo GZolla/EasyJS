@@ -14,13 +14,13 @@ await APITest.runTests(
         return Test.isEqual(actual.id,expected.id);
     }
 )
-APITest.displayLastCases();
+APITest.displayErrors();
 
 API.removeById("pokeApi")
 await APITest.runTests(
     [
-        {id:"",input:["https://pokeapi.co/api/v2/pokemon","GET",null,"pokeApi"],expected:{id:"pokeApi"}},
-        {id:"",input:["https://notarealpage.com","GET",null,""],expected:{id:``}}
+        {id:"correct",input:["https://pokeapi.co/api/v2/pokemon","GET",null,"pokeApi"],expected:{id:"pokeApi"}},
+        {id:"incorrect",input:["https://notarealpage.com","GET",null,""],expected:{id:``}}
     ],
     (actual, expected) => {
         return Test.isEqual(actual.id,expected.id);
@@ -38,6 +38,6 @@ await APITest.runInstanceTests("sendRequest",[
     }
 ],Test.isDeepEqual)
 
-APITest.displayLastCases();
+APITest.displayErrors();
 
 console.log(APITest.getParamNames());

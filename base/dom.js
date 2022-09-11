@@ -1,30 +1,31 @@
 // @ts-check
 
-
+/**
+ * Utility Functions and options to add elements to DOM
+ * @module DOM
+ */
 
 /* ----------------------------------------------------------------------------------------------------
 DOM Handling Functions
 ---------------------------------------------------------------------------------------------------- */
 /**
  * @callback domOptionCallback
- * @param {Element} element 
- * @param {Element} reference 
+ * @param {Node} element Element to insert
+ * @param {Node} reference Reference Element
  */
 
 /**
  * Insert given element after reference element
- * @param {Element} element Element to insert
- * @param {Element} reference Reference Element
+ * @type {domOptionCallback}
  */
 export function insertAfter(element, reference) {
     if(!reference.parentNode) throw new Error("Not in  DOM");
-    reference.parentNode.insertBefore(element, reference.nextElementSibling)
+    reference.parentNode.insertBefore(element, reference.nextSibling)
 }
 
 /**
  * Insert given element before reference element
- * @param {Element} element  Element to insert
- * @param {Element} reference Reference Element
+ * @type {domOptionCallback}
  */
 export function insertBefore(element, reference) {
     if(!reference.parentNode) throw new Error("Not in  DOM");
@@ -33,8 +34,7 @@ export function insertBefore(element, reference) {
 
 /**
  * Insert element as first child of parent
- * @param {Element} element Element to insert
- * @param {Element} reference Parent element
+ * @type {domOptionCallback}
  */
 export function insertFirst(element, reference) {
     reference.insertBefore(element,reference.firstChild)
@@ -42,10 +42,10 @@ export function insertFirst(element, reference) {
 
 /**
  * Remove element from DOM
- * @param {Element} element
+ * @param {Node} [element]
  */
 export function removeElement(element) {
-    if(element != null && element.parentNode) {
+    if(element && element.parentNode) {
         element.parentNode.removeChild(element)
     }
 }
@@ -68,7 +68,7 @@ DOM OPTIONS: Options for inserting elements into the DOM
 export class DOMOption {
     /**
      * Builds a DOM insertion option
-     * @param {Element} referenceElement
+     * @param {Node} referenceElement
      * @param {domOptionCallback} callback
      */
     constructor(referenceElement, callback) {
@@ -78,7 +78,7 @@ export class DOMOption {
 
     /**
      * Apply option to element
-     * @param {Element} element 
+     * @param {Node} element 
      */
     apply(element) {
         this.callback(element,this.referenceElement)
@@ -89,7 +89,7 @@ export class DOMOptions {
 
     /**
      * Returns a DomOption with custom callback
-     * @param {Element} referenceElement
+     * @param {Node} referenceElement
      * @param {domOptionCallback} callback
      * @returns {DOMOption} 
      */
@@ -100,7 +100,7 @@ export class DOMOptions {
 
     /**
      * Append into reference element
-     * @param {Element} referenceElement 
+     * @param {Node} referenceElement 
      * @returns {DOMOption}
      */
     static append(referenceElement) {
@@ -110,7 +110,7 @@ export class DOMOptions {
 
     /**
      * Insert before reference element
-     * @param {Element} referenceElement 
+     * @param {Node} referenceElement 
      * @returns {DOMOption}
      */
     static before = (referenceElement) => {
@@ -120,7 +120,7 @@ export class DOMOptions {
 
     /**
      * Insert after reference element
-     * @param {Element} referenceElement 
+     * @param {Node} referenceElement 
      * @returns {DOMOption}
      */
     static after(referenceElement) {
@@ -130,11 +130,50 @@ export class DOMOptions {
 
     /**
      * Insert as first child of reference element
-     * @param {Element} referenceElement 
+     * @param {Node} referenceElement 
      * @returns {DOMOption}
      */
     static first(referenceElement) {
         return this.custom(referenceElement,insertFirst);
     }
 }
+
+/**
+ * Add an event that triggers after the mouse is not moving inside an element for a given amount of time.
+ * @param {HTMLElement} element Element to add event to 
+ * @param {function} callback Callback for event
+ * @param {number} [delay] Time in milliseconds before event is triggered
+ */
+export function addMaintainHoverEvent(element,callback, delay = 2000) {
+    const launch = (e) => {
+        triggerMaintainHoverEvent(callback,delay,e)
+    }
+    element.addEventListener("mouseenter",launch);
+    element.addEventListener("mousemove",(e)=> {
+        cancelMaintainHoverEvent(e);
+        launch(e);
+    })
+    element.addEventListener("mouseleave",cancelMaintainHoverEvent);
+}
+
+/**
+ * @param {function} callback Callback for event
+ * @param {number} delay Time in milliseconds before event is triggered
+ * @param {MouseEvent} e 
+ */
+function triggerMaintainHoverEvent(callback,delay,e) {
+    const ele = /** @type {HTMLElement}*/(e.currentTarget)
+    const tryCallback = setTimeout(()=>{callback(e)},delay);
+    ele.dataset["maintainHoverTimeout"] = tryCallback + "";
+}
+
+/**
+ * @param {MouseEvent} e 
+ */
+function cancelMaintainHoverEvent(e) {
+    const ele = /** @type {HTMLElement}*/(e.currentTarget)
+    clearTimeout(Number(ele.dataset["maintainHoverTimeout"]))
+}
+
+
 

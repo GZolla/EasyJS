@@ -3,11 +3,11 @@
 }
 .ejs-carrousel-content {
     max-height: 0;
-    transition: max-height 0.15s ease-out;
+    transition: max-height 0.45s ease-out;
     overflow: hidden;
 }
 
 .ejs-carrousel-open > .ejs-carrousel-content {
-    max-height: 100vh;
-    transition: max-height 0.25s ease-in;
+    max-height: 300vh;
+    transition: max-height 0.75s ease-in;
 }

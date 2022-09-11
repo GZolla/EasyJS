@@ -1,21 +1,26 @@
 // @ts-check
-
 import { Dropdown, NavBar } from "../displays/displays.js";
-import { BUILD } from "../../base/build.js";
-import { DOMOption, DOMOptions, removeElements } from "../../base/dom.js";
+import * as Build from "../../base/build.js";
+import { DOMOption, DOMOptions} from "../../base/dom.js";
 import {loadCSS} from "../../base/css.js"
 import {PATH_TO_EJS} from "../../settings.js"
 loadCSS("testCss",PATH_TO_EJS + "addOns/testing/index.css");
 
+/** 
+ * A unit testing framework
+ * @module Testing
+ */
+
 /**
- * @template {*[]} Input
- * @template {*} Actual
+ * @template {*[]} Input The type of the input paramaters, expressed as an array
+ * @template {*} Actual The type of the output of the callback
  * @class
  */
 export class Test {
     /** @type {TestCallback} */ callback;
     /** @type {boolean} */ parallelize;
-    /** @type {TestCase<Input,any>[]} */ lastCases;
+    /** @type {Array<TestCase<Input,any>>} */ lastCases;
+    /** @type {Dropdown | null} */ dropdown = null;
 
     /**
      * Set up a test
@@ -28,54 +33,74 @@ export class Test {
     }
 
     /**
-     * @returns {function}
+     * @returns {function} Function from which to extract name and parameters
      */
-     getActualCallback() {
+    getActualCallback() {
         return this.callback;
+    }
+
+
+    /**
+     * 
+     * @returns {number}
+     */
+    countSuccess() {
+        return this.lastCases.reduce(
+            (total,{errorMessage}) => total + (errorMessage === null ? 1:0),
+            0
+        )
     }
 
     /* ----------------------------------------------------------------------------------------------------
     Types
     ---------------------------------------------------------------------------------------------------- */
+
     /**
-     * @typedef {(...args:Input) => Actual} TestCallback Callback to test
+     * @typedef {(...args: Input)=>Actual} TestCallback Callback to test
      */
 
     /**
-     * @template {any[]} Input
-     * @template {any} Actual
-     * @template {any} Expected
-     * @callback TestCallbackChecker 
-     * @param {Actual} actual
-     * @param {Expected} expected
-     * @param {Input} input
-     * @param {number} [index]
+     * @template {*[]} Input The type of the input paramaters, expressed as an array
+     * @template {*} Actual The type of the output of the callback
+     * @template {*} Expected The type of the expected value
+     * @template {*} [This=unknown]
+     * @this This
+     * @callback Checker A function to compare the actual output of a callback against the given expected
+     * @param {Actual} actual The actual ouput of the callback
+     * @param {Expected} expected The expected value to compare against
+     * @param {Input} input The input used to obtain 'actual'
+     * @param {number} [index] The index of a testcase if run with multiple
      * @return {string | null | Promise<string | null>}
      */
 
     /**
-     * @template {any} Input
-     * @template {any} Expected
+     * @template {*[]} Input The type of the input paramaters, expressed as an array
+     * @template {*} Expected The type of the expected value
      * @typedef {Object} TestCase
-     * @property {Input} input
-     * @property {Expected} expected
-     * @property {string} [id]
-     * @property {string | null} [errorMessage]
+     * @property {Input} input Input parameters as an array
+     * @property {Expected} expected Expected value for checker function
+     * @property {string} [id] Id of testcase
+     * @property {string | null} [errorMessage] Error message resulting from checking the test case, or null if test succeeded
      */
 
+    /**
+     * @template {*[]} Input
+     * @callback Ider
+     * @param {Input} input
+     */
 
     /* ----------------------------------------------------------------------------------------------------
     Test Runners
     ---------------------------------------------------------------------------------------------------- */
 
     /**
-     * @template {any} Expected
      * Run a test against the set callback
+     * @template {*} Expected The type of the expected value
      * @param {TestCase<Input,Expected>} check
-     * @param {TestCallbackChecker<Input,Actual,Expected>} checkFunction Checker of actual result
+     * @param {Checker<Input,Actual,Expected>} checkFunction Checker of actual result
      * @param {boolean} [expectException] Wether the callback should throw error on the given inputs
      * @param {number} [index] Index of the test if run with others
-     * @return {Promise<string | null>}
+     * @return {Promise<string | null>} Error message resulting from checking the test case, or null if test succeeded
      */
     async runTest({input, expected}, checkFunction, expectException = false, index) {
         try {
@@ -92,12 +117,12 @@ export class Test {
 
     /**
      * Run multiple tests against the callback
-     * @template {any} Expected Type of expected parameter in checkFunction
-     * @param {TestCase<Input,Expected>[]} cases Test Cases to run against check
-     * @param {TestCallbackChecker<Input, Actual,Expected>} checkFunction Checker of actual result
+     * @template {*} Expected The type of the expected value
+     * @param {Array<TestCase<Input,Expected>>} cases Test Cases to run against check
+     * @param {Checker<Input, Actual,Expected>} checkFunction Checker of actual result
      * @param {boolean} [expectException] Wether the callback should throw error on the given inputs
-     * @param {(input:Input) => string} [ider] Function to id checks using their inputs if no id.
-     * @return {Promise<(string | null)[]>}
+     * @param {Ider<Input>} [ider] Function to id test cases using their inputs if no id is given.
+     * @return {Promise<Array<string | null>>} Error messages from each test case, or null for succesful tests
      */
     async runTests(cases, checkFunction, expectException = false, ider = (inp)=>inp+"") {    
         const errorPromises = []
@@ -122,8 +147,8 @@ export class Test {
 
     /**
      * Checks that actual and expected are equal using the === operator
-     * @template {any} T
-     * @type {TestCallbackChecker<any, T,T>}
+     * @template {*} T
+     * @type {Checker<any, T,T>}
      */
      static isEqual(actual, expected) {
         if(actual === expected) return null
@@ -134,7 +159,7 @@ export class Test {
     
     /**
      * Check that objects are deeply equal
-     * @type {TestCallbackChecker<*,Object.<string,*>, Object.<string,*>>}
+     * @type {Checker<*,Object.<string,*>, Object.<string,*>>}
      */
     static isDeepEqual(actual, expected) {
         for (const key in expected) {
@@ -151,7 +176,7 @@ export class Test {
     /**
      * Check that two arrays are equal in any order
      * @template {*} T
-     * @type {TestCallbackChecker<*, Array<T>, Array<T>>}
+     * @type {Checker<*, Array<T>, Array<T>>}
      */
     static isEqualDisordered(actual, expected) {
         const actual_clone = [...actual];
@@ -171,8 +196,7 @@ export class Test {
 
     /**
      * Just pass
-     * @template {*} T
-     * @type {TestCallbackChecker<*, Array<T>, Array<T>>}
+     * @type {Checker<*, *, *>}
      */
     static pass() {
         return null;
@@ -202,35 +226,21 @@ export class Test {
 
     /**
      * Create a display for the given error messages
-     * @template {any} Expected Type of expected parameter in checkFunction
-     * @param {TestCase<Input,Expected>[]} cases Test Cases run to get the errors
+     * @template {*} Expected The type of the expected value
+     * @param {Array<TestCase<Input,Expected>>} cases Test Cases run to get the errors
      * @param {string} [title] Title of the display
      * @param {HTMLElement} [parent] Container of the display
-     * @return {Dropdown} All tests were successful 
+     * @return {Dropdown} The dropdown display
      */
-     displayErrors(cases, title, parent = document.body) {
-         var successes = 0;
-         const errorDisplays = []
-         for (const testCase of cases) {
-            errorDisplays.push(this.buildErrorDisplay(testCase))
+    displayCases(cases = this.lastCases, title, parent = document.body) {
+        const dropdown = new Dropdown("",{className:"test",option:DOMOptions.append(parent)})
+
+        var successes = 0;
+        for (const testCase of cases) {
+            dropdown.content.appendChild(this.buildCaseDisplay(testCase))
             if(testCase.errorMessage === null) successes++;
-         }
-        const dropdown = new Dropdown(
-            `${title??this.getActualCallback().name}: ${successes} of ${cases.length} test cases passed`,
-            "test",
-            DOMOptions.append(parent)
-        )
-
-        for (const errorDisplay of errorDisplays) {
-            dropdown.content.appendChild(errorDisplay);
         }
-
-        
-        // const titleElement = BUILD.element("h2","test-title",DOMOptions.first(carrouscontainer));
-        // const toggler = BUILD.element("span","toggler",DOMOptions.append(titleElement))
-        // toggler.addEventListener("click",(ev)=>{
-        //     /**@type {HTMLElement}*/(ev.currentTarget).parentElement?.parentElement?.classList.toggle("test-detailed")
-        // })
+        dropdown.changeTitle(`${title??this.getActualCallback().name}: ${successes} of ${cases.length} test cases passed`)
 
         const allPassed = successes == cases.length;
         dropdown.container.classList.add(allPassed? "succeeded" : "failed")
@@ -239,27 +249,19 @@ export class Test {
 
     }
 
-    /**
-     * Display the last cases run in this test
-     * @param {string} [title] 
-     * @param {HTMLElement} [parent] 
-     * @return {Dropdown}
-     */
-    displayLastCases(title, parent = document.body){
-        return this.displayErrors(this.lastCases,title,parent);
-    }
+
 
     /**
      * Display given error inside the given container
-     * @template {any} Expected Type of expected parameter in checkFunction
+     * @template {*} Expected The type of the expected value
      * @param {TestCase<Input,Expected>} testCase Test identifier 
      */
-    buildErrorDisplay(testCase) {
-        const errorDisplay = BUILD.element("span","test-case " + (testCase.errorMessage != null?"failed":"succeeded"));
-        const idContainer = BUILD.element("b","test-case-id",DOMOptions.append(errorDisplay))
+    buildCaseDisplay(testCase) {
+        const errorDisplay = Build.element("span","test-case " + (testCase.errorMessage != null?"failed":"succeeded"));
+        const idContainer = Build.element("b","test-case-id",DOMOptions.append(errorDisplay))
         idContainer.innerHTML = testCase.id?testCase.id:""
 
-        const msContainer = BUILD.element("span","test-case-message",DOMOptions.append(errorDisplay))
+        const msContainer = Build.element("span","test-case-message",DOMOptions.append(errorDisplay))
         msContainer.innerHTML = testCase.errorMessage != null ? testCase.errorMessage : "Success";
 
         return errorDisplay;
@@ -270,20 +272,24 @@ export class Test {
 
 /**
  * Test for a class
- * @template {any[]} Input
- * @template {any} Actual
+ * @template {*[]} Input The type of the input paramaters, expressed as an array
+ * @template {*} Actual The type of the output of the callback
  * @extends {Test}
  */
 export class ClassTest extends Test {
 
+    
 
-    /** @type {new (...args: Input) => Actual} */ Constructor;
+
+
+    /** @type {new (...args: Input)=>Actual} */ Constructor;
     /** @type {Actual[]} */ instances = [];
-    /** @type {Object.<string,TestContainer>} */ lastFunctionTests = {};
+    /** @type {Object<string,Array<Test<any,any>>>} */ lastFunctionTests = {};
+    /** @type {NavBar} */ navbar;
 
     /**
      * Set up a test for a class
-     * @param {new (...args: Input) => Actual} Constructor Callback to test 
+     * @param {new (...args: Input)=>Actual} Constructor Class to test
      * @param {boolean} [parallelize] Run tests in parallel or sequentially
      */
     constructor(Constructor, parallelize = false) {
@@ -294,14 +300,9 @@ export class ClassTest extends Test {
         this.Constructor = Constructor;
     }
 
+    
     /**
-     * @typedef {object} TestContainer
-     * @property {Test<any,any>[]} tests
-     * @property {HTMLElement} [container]
-     */
-
-    /**
-     * @override
+     * @overrides
      * @returns {function}
      */
     getActualCallback() {
@@ -310,52 +311,51 @@ export class ClassTest extends Test {
 
 
     /**
-     * @overrides
      * Run multiple test cases agaisnt the class
-     * @template {any} Expected Type of expected parameter in checkFunction
-     * @param {TestCase<Input,Expected>[]} cases Test Cases to run against check
-     * @param {TestCallbackChecker<Input, Actual,Expected>} checkFunction Checker of actual result
+     * @overrides
+     * @template {*} Expected The type of the expected value
+     * @param {Array<TestCase<Input,Expected>>} cases Test Cases to run against check
+     * @param {Checker<Input, Actual,Expected>} checkFunction Checker of actual result
      * @param {boolean} [expectException] Wether the callback should throw error on the given inputs
-     * @param {(input:Input) => string} [ider] Function to id checks using their inputs if no id.
-     * @return {Promise<(string | null)[]>}
+     * @param {Ider<Input>} [ider] Function to id checks using their inputs if no id.
+     * @return {Promise<Array<string | null>>}
      */
      async runTests(cases, checkFunction, expectException = false, ider = (inp)=>inp+"") {
         this.instances = [];
         this.lastFunctionTests = {};
         return super.runTests(cases,async (actual, expected,input,index)=>{
-            this.instances.push(actual);
-            return checkFunction(actual,expected,input,index)
+            const result = await checkFunction(actual,expected,input,index);
+            if(result === null) this.instances.push(actual);
+            return result
         },expectException,ider)
     }
 
     /**
      * Run multiple tests against the callback and generate
      * @overrides
-     * @template {any[]} FunctionInput
-     * @template {any} FunctionActual
-     * @template {any} FunctionExpected
-     * @param {string} name
+     * @template {*[]} FunctionInput The type of functions the input paramaters, expressed as an array
+     * @template {*} FunctionActual The type of the output of the function
+     * @template {*} FunctionExpected The type of the expected value for the checker
+     * @param {string} name The name of the function
      * @param {Object[]} checks
      * @param {FunctionInput} checks[].input Inputs of test
      * @param {FunctionExpected[]} checks[].expecteds Expected outputs of test
-     * @param {TestCallbackChecker<FunctionInput, FunctionActual, FunctionExpected>} checkFunction Checker of actual result
+     * @param {Checker<FunctionInput, FunctionActual, FunctionExpected,Actual>} checkFunction Checker of actual result
      * @param {boolean} [expectException] Wether the callback should throw error on the given inputs
      * @param {boolean} [parallelize] Parallelize the tests or run sequentially
-     * @return {Promise<(string | null)[][]>}
+     * @return {Promise<Array<Array<string | null>>>}
      */
     async runInstanceTests(name, checks, checkFunction, expectException = false, parallelize = false) {
         const messages = [];
-        this.lastFunctionTests[name] = {
-            tests:[]
-        }
+        this.lastFunctionTests[name] = []
         for (let i = 0; i< this.instances.length;i++) {
             const instance = this.instances[i];
-            // const instanceTestCases =
+            const func = instance[name];
+            if(typeof func != "function") throw new Error(`${name} is not a function inside instance of ${this.Constructor.name}`);
 
-            if(typeof instance[name] != "function") throw new Error(`${name} is not a function inside instance of ${this.Constructor.name}`);
             /** @type {Test<FunctionInput,FunctionActual>} */
-            const instanceCheck = new Test(instance[name].bind(instance),parallelize);
-            this.lastFunctionTests[name].tests.push(instanceCheck);
+            const instanceCheck = new Test(func.bind(instance),parallelize);
+            this.lastFunctionTests[name].push(instanceCheck);
 
             const results = instanceCheck.runTests(checks.map(({input,expecteds})=>{
                 return {input:input,expected:expecteds[i]};
@@ -368,62 +368,78 @@ export class ClassTest extends Test {
         return Promise.all(messages);
     }
 
+    /* ----------------------------------------------------------------------------------------------------
+    Display
+    ---------------------------------------------------------------------------------------------------- */
+
     static CONTAINER_CLASS = "test-function-container"
     /**
-     * @override
-     * Display the last cases run in this test
-     * @param {string} [title] 
-     * @param {HTMLElement} [parent] 
-     * @return {Dropdown}
+     * Create a display for the given error messages
+     * @template {*} Expected The type of the expected value
+     * @param {Array<TestCase<Input,Expected>>} cases Test Cases run to get the errors
+     * @param {string} [title] Title of the display
+     * @param {HTMLElement} [parent] Container of the display
+     * @return {Dropdown} The dropdown display
      */
-     displayLastCases(title, parent = document.body){
-        const dropdown = super.displayLastCases(title,parent);
+    displayErrors(cases = this.lastCases, title, parent = document.body){
+        const dropdown = new Dropdown("",{className:"test",option:DOMOptions.append(parent)})
+        dropdown.content.classList.add("test-class");
+        const appendToContent = DOMOptions.append(dropdown.content)
 
-        const newContent = BUILD.element("div",dropdown.content.className + " test-class",DOMOptions.append(dropdown.container))
-        const newContentOption = DOMOptions.append(newContent)
-
-        
-        const construction = dropdown.content        
-        dropdown.content = newContent;
-        
-        construction.className = ClassTest.CONTAINER_CLASS;
-        newContent.appendChild(construction)
-        
-        const navbar = new NavBar(BUILD.element("nav","test-navigation",newContentOption));
-        navbar.add("Construction",construction,newContentOption)
-        navbar.open("Construction")
-        
-        
-        // const constructionLi = BUILD.element("li","test-function-item",navbarOption);
-        // constructionLi.addEventListener("click",ClassTest.openContainer.bind(null,newContent,construction))
-        // constructionLi.innerHTML = "Construction"
-        for (const name in this.lastFunctionTests) {
-            const container = BUILD.element("div",ClassTest.CONTAINER_CLASS)
-            navbar.add(name,container,newContentOption)
-            
-            // this.lastFunctionTests[name].container = container
-            for (let i = 0; i < this.lastFunctionTests[name].tests.length; i++) {
-                const test = this.lastFunctionTests[name].tests[i];
-                test.displayLastCases(this.lastCases[i].id,container);
-            }
+        const construction = Build.element("div",ClassTest.CONTAINER_CLASS)
+        var successes = 0;
+        for (const testCase of cases) {
+            construction.appendChild(this.buildCaseDisplay(testCase))
+            if(testCase.errorMessage === null) successes++;
         }
+
+        
+        this.navbar = new NavBar(Build.element("nav","test-navigation",appendToContent));
+        const constructionPassing = this.addFunctionDisplay("Construction",successes,this.lastCases.length,construction,appendToContent)
+        this.navbar.open(Object.keys(this.navbar.elements)[0])
+        
+        let functionPassing = 0
+        let functionCount = 0;
+        for (const name in this.lastFunctionTests) {
+            const container = Build.element("div",ClassTest.CONTAINER_CLASS)
+            
+            let passing = 0;
+            for (let i = 0; i < this.lastFunctionTests[name].length; i++) {
+                const test = this.lastFunctionTests[name][i];
+                const testDropdown = test.displayCases(undefined,this.lastCases[i].id,container);
+                if(testDropdown.container.classList.contains("succeeded")) passing ++;
+            }
+
+            const passed = this.addFunctionDisplay(name,passing,this.lastFunctionTests[name].length,container,appendToContent)
+            if(passed) functionPassing++;
+            functionCount++;
+        }
+
+        dropdown.changeTitle(
+            `${title??this.getActualCallback().name}: Construction ${constructionPassing?"passing":"failing"}`
+            + (functionCount > 0 ? `,${functionPassing} of ${functionCount} functions passed` : "")
+        )
+        dropdown.container.classList.add(constructionPassing && functionCount == functionPassing ?"succeeded":"failed");
 
 
         return dropdown
     }
 
     /**
-     * 
-     * @param {HTMLElement} content 
-     * @param {HTMLElement} container 
+     * Add a function test to the display
+     * @param {string} name 
+     * @param {number} successes 
+     * @param {number} total 
+     * @param {HTMLElement} element
+     * @param {DOMOption} appendToContent
+     * @returns {boolean} Passed all
      */
-    static openContainer(content, container) {
-        const containers = /** @type {HTMLCollectionOf<HTMLElement>} */(content.getElementsByClassName(ClassTest.CONTAINER_CLASS))
-        for(const element of containers) {
-            element.style.display = "none"
-        }
-        
-        container.style.display = "block"
+    addFunctionDisplay(name, successes, total, element, appendToContent) {
+        const header = `${name}(${successes}/${total})`
+        this.navbar.add(header,element,appendToContent)
+        const passing = successes == this.lastCases.length
+        this.navbar.elements[header].li.classList.add(passing?"ejs-li-success":"ejs-li-fail")
+        return passing
     }
 
 

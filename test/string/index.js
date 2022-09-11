@@ -1,7 +1,7 @@
 // @ts-check
 
 import { Carrousel } from "../../addOns/displays/displays.js";
-import StringUtils from "../../base/string.js"
+import * as StringUtils from "../../base/string.js"
 import {Test} from "../../addOns/testing/testing.js"
 
 const carrousel = new Carrousel();
@@ -16,7 +16,7 @@ fillStringTest.runTests(
     ],
     Test.isEqual
 ).then((v)=>{
-    carrousel.add(fillStringTest.displayLastCases());
+    carrousel.add(fillStringTest.displayCases());
 })
 
 
@@ -33,7 +33,7 @@ mapWordsTest.runTests(
     ],
     Test.isEqual
 ).then((v)=>{
-    carrousel.add(mapWordsTest.displayLastCases())
+    carrousel.add(mapWordsTest.displayCases())
 })
 
 
@@ -47,5 +47,5 @@ toTitleCaseTest.runTests(
     ],
     Test.isEqual
 ).then((v)=>{
-    carrousel.add(toTitleCaseTest.displayLastCases())
+    carrousel.add(toTitleCaseTest.displayCases())
 })

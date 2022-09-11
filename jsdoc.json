@@ -2,7 +2,7 @@
     "plugins": ["plugins/markdown"],
     "recurseDepth": 10,
     "source": {
-        "include":["base","addOns"],
+        "include":["base","addOns","addOns/displays","addOns/testing","README.md"],
         "includePattern": ".js$",
         "excludePattern": "(node_modules/|docs)"
     },
@@ -16,7 +16,7 @@
         "monospaceLinks": false
     },
     "opts": {
-        "templates": "templates/default",
-        "destination" : "./docs"
+        "template": "doc-templates/easydoc",
+        "destination": "./docs" 
     }
 }

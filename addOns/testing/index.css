@@ -112,3 +112,6 @@ body {
 .test-function-container {
     padding: .6em;
 }
+
+.ejs-li-fail {color:red}
+.ejs-li-success {color:green}

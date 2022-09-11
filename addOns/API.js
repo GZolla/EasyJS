@@ -1,9 +1,17 @@
 // @ts-check
+/**
+ * @module API
+ */
 
 /* ----------------------------------------------------------------------------------------------------
 COOKIES
 ---------------------------------------------------------------------------------------------------- */
 
+/**
+ * Get cookie by name
+ * @param {string} name 
+ * @returns {string | null}
+ */
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -57,7 +65,7 @@ API TYPES
 
 /**
  * @callback ResponseCallback Callback that takes a promise of an API request
- * @param {Promise.<Object.<string,string> | {}>} promise
+ * @param {Promise.<Object.<string,string>>} promise
  */
 
 
@@ -138,8 +146,8 @@ export class API {
     /**
      * Find request with the given id, send it with given data if found, throw error otherwise
      * @param {string} id 
-     * @param {Object.<string,string> | {}} data 
-     * @return {Promise.<Object.<string,string> | {}>}
+     * @param {Object.<string,string>} data 
+     * @return {Promise.<Object.<string,string>>}
      */
     static async sendRequestById(id,data) {
         if(!(id in this.BASES)) throw new Error("API with given id was not found")
@@ -149,7 +157,7 @@ export class API {
     /**
      * Find API with the given id, send request with given data if found and pass response to callback, throw error otherwise
      * @param {string} id 
-     * @param {Promise.<Object.<string,string> | {}>} data 
+     * @param {Object.<string,string>} data 
      * @param {ResponseCallback} callback
      */
     static async sendRequestByIdCallback(id,data, callback) {
@@ -198,11 +206,10 @@ export class API {
             credentials: 'same-origin'
         }
     }
-
     /**
      * Send request with given data and return the response data
-     * @param {Object.<string,string> | {}} data
-     * @return {Promise.<Object.<string,string> | {}>}
+     * @param {Object.<string,string>} data
+     * @return {Promise.<Object.<string,any>>}
      */
     async sendRequest(data) {
         if(this.active_count == 0 && this.loading_data) this.loading_data.renderer(this.loading_data.render_param)
@@ -210,6 +217,7 @@ export class API {
 
         API.printTable(this.id,"#770",data)
 
+        /** @type {Object.<String,string>} */
         let response_data = {}
         const start_ms = new Date().getTime()
         try {
@@ -232,7 +240,7 @@ export class API {
 
     /**
      * Send request and pass response data to callback after delay, another call to this function cancels last call and restarts time
-     * @param {Object.<string,string> | {}} data 
+     * @param {Object.<string,string>} data 
      * @param {ObjectCallback} callback 
      * @param {number} delay 
      */
