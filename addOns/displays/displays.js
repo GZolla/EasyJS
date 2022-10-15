@@ -189,3 +189,35 @@ export class NavBar {
     }
 
 }
+
+export class Modal {
+    /**@type {HTMLElement} */ container;
+    /**@type {HTMLElement} */ content;
+    
+    /**
+     * Build modal
+     * @param {string} className 
+     */
+    constructor(className) {
+        this.container = Build.element("div","ejs-modal-container ejs-modal-open " + className,DOMOptions.append(document.body));
+        this.content = Build.element("div","ejs-modal-content",DOMOptions.append(this.container))
+        this.container.addEventListener("click",Modal.closeFromContainer.bind(null,this))
+    }
+
+    /**
+     * 
+     * @param {Modal} modal
+     * @param {MouseEvent} e 
+     */
+    static closeFromContainer(modal,e) {
+        if (e.target != null && e.target == e.currentTarget) modal.close();
+    }
+
+    open() {
+        this.container.classList.add("ejs-modal-open");
+    }
+
+    close() {
+        this.container.classList.remove("ejs-modal-open");
+    }
+}

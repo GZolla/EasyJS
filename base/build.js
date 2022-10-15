@@ -194,6 +194,7 @@ Inputs
  * @property {string} [value]
  * @property {EventHandler} [event]
  * @property {EventHandler[]} [events]
+ * @property {boolean} [disabled]
  */
 
 /**
@@ -209,12 +210,13 @@ export const Input = {
      * @param {InputOptions} options 
      * @return {HTMLInputElement}
      */
-    custom: function(type, {className,option, name, value,event, events} = {}) {
+    custom: function(type, {className,option, name, value,event, events, disabled} = {}) {
         const input = /** @type {HTMLInputElement} */ (element("input",className,option));
         input.type = type;
     
         if (value != null) {input.value = value;}
         if (name != null) {input.name = name;}
+        if (disabled != null) {input.disabled = disabled;}
     
         // Events
         if(event != null) {

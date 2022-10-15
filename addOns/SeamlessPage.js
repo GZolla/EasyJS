@@ -41,7 +41,7 @@ export class SeamlessPage {
      * @param {PopStateEvent} e 
      */
     static handlePop(e) {
-        SeamlessPage.loadState(e.state.stateKey);
+        SeamlessPage.loadState(e.state.stateKey,false);
     }
 
     /**
@@ -51,7 +51,7 @@ export class SeamlessPage {
      */
     static checkStateValidity(stateKey) {
         if(SeamlessPage.states == null) throw new Error("States have not been set, call set() to do so.");
-        if(!(stateKey in SeamlessPage.states)) throw new Error("Invalid State, given key must be in set states");
+        if(!(stateKey in SeamlessPage.states)) throw new Error(`Invalid State '${stateKey}', given key must be in set states`);
         return SeamlessPage.states[stateKey];
     }
 
@@ -64,7 +64,7 @@ export class SeamlessPage {
     static loadState(stateKey, navigate = true, reload = true) {
         if(!reload && stateKey === this.currentState) return;
         const state = SeamlessPage.checkStateValidity(stateKey);
-        window.history[navigate ? "pushState" : "replaceState"]({stateKey:stateKey},"",encodeURIComponent(state.url))
+        window.history[navigate ? "pushState" : "replaceState"]({stateKey:stateKey},"",encodeURI(state.url))
         
         SeamlessPage.renderState(stateKey)
     }

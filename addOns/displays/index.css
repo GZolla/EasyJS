@@ -11,3 +11,14 @@
     max-height: 300vh;
     transition: max-height 0.75s ease-in;
 }
+
+.ejs-modal-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    display: none;
+    z-index: 1000;
+}
+.ejs-modal-open {
+    display: grid;
+}

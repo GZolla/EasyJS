@@ -33,16 +33,9 @@ API TYPES
 ---------------------------------------------------------------------------------------------------- */
 
 /**
- * @callback ObjectCallback Callback that takes an object as only parameter
- * @param {Object.<string,*>} param
- */
-
-/**
  * @typedef {Object} LoadingData
- * @property {ObjectCallback} renderer
- * @property {Object.<string,*>} render_param
- * @property {ObjectCallback} derenderer
- * @property {Object.<string,*>} derender_param
+ * @property {function} renderer
+ * @property {function} derenderer
  */
 
 /**
@@ -65,7 +58,7 @@ API TYPES
 
 /**
  * @callback ResponseCallback Callback that takes a promise of an API request
- * @param {Promise.<Object.<string,string>>} promise
+ * @param {Object<string,any> | Array<any>} promise
  */
 
 
@@ -82,13 +75,11 @@ export class API {
     /**
      * Construct an APIRequest
      * @param {string} url 
-     * @param {RESTMethod} method
-     * @param {LoadingData | null} loading_data Loading animation to render
+     * @param {LoadingData} [loading_data] Loading animation to render
      * @param {string} id
      */
-    constructor(url, method, loading_data, id = url+":"+method) {
+    constructor(url, loading_data, id = url) {
         this.url = url
-        this.method = method
 
         this.id = API.getUniqueID(id)
         API.BASES[this.id] = this
@@ -146,22 +137,24 @@ export class API {
     /**
      * Find request with the given id, send it with given data if found, throw error otherwise
      * @param {string} id 
-     * @param {Object.<string,string>} data 
-     * @return {Promise.<Object.<string,string>>}
+     * @param {RESTMethod} method
+     * @param {Object.<string,string>} [data] 
+     * @return {Promise<Object<string,any> | Array<any>>}
      */
-    static async sendRequestById(id,data) {
+    static async sendRequestById(id,method,data = {}) {
         if(!(id in this.BASES)) throw new Error("API with given id was not found")
-        return await this.BASES[id].sendRequest(data);
+        return await this.BASES[id].sendRequest(method,data);
     }
 
     /**
      * Find API with the given id, send request with given data if found and pass response to callback, throw error otherwise
      * @param {string} id 
-     * @param {Object.<string,string>} data 
+     * @param {RESTMethod} method
+     * @param {Object.<string,string>} [data] 
      * @param {ResponseCallback} callback
      */
-    static async sendRequestByIdCallback(id,data, callback) {
-        callback(this.sendRequestById(id, data) )
+    static async sendRequestByIdCallback(callback, id,method,data = {}) {
+        callback(await this.sendRequestById(id,method, data) )
     }
 
     /**
@@ -179,11 +172,12 @@ export class API {
 
     /**
      * Get a URL to send the request
+     * @param {RESTMethod} method
      * @param {Object.<string,string>} data 
      * @returns {string}
      */
-    getRequestUrl(data) {
-        if(this.method != "GET") return this.url
+    getRequestUrl(method,data) {
+        if(method !== "GET") return this.url + "/"
         var params = ""
         for (const key in data) {
             const current_param = encodeURIComponent(data[key])
@@ -194,13 +188,14 @@ export class API {
 
     /**
      * Get the body to send the request
+     * @param {RESTMethod} method
      * @param {Object.<string,string>} data 
      * @returns {RequestBody|{}}
      */
-    getRequestBody(data) {
-        if(this.method == "GET") return {}
+    getRequestBody(method,data) {
+        if(method == "GET") return {}
         return {
-            method:this.method,
+            method:method,
             body: JSON.stringify(data),
             headers: {'Content-Type': 'application/json',"X-CSRFToken":getCookie('csrftoken')},
             credentials: 'same-origin'
@@ -208,11 +203,12 @@ export class API {
     }
     /**
      * Send request with given data and return the response data
-     * @param {Object.<string,string>} data
-     * @return {Promise.<Object.<string,any>>}
+     * @param {RESTMethod} method
+     * @param {Object<string,string>} [data]
+     * @return {Promise<Object<string,any> | Array<any>>}
      */
-    async sendRequest(data) {
-        if(this.active_count == 0 && this.loading_data) this.loading_data.renderer(this.loading_data.render_param)
+    async sendRequest(method,data = {}) {
+        if(this.active_count == 0 && this.loading_data) this.loading_data.renderer()
         this.active_count++
 
         API.printTable(this.id,"#770",data)
@@ -221,7 +217,7 @@ export class API {
         let response_data = {}
         const start_ms = new Date().getTime()
         try {
-            const response = await fetch(this.getRequestUrl(data), this.getRequestBody(data));
+            const response = await fetch(this.getRequestUrl(method,data), this.getRequestBody(method,data));
             response_data = await response.json();
             if(!response.ok) throw new Error((response_data && response_data.message) || response.status)
             const end_ms = new Date().getTime()
@@ -233,7 +229,7 @@ export class API {
         }
 
         this.active_count--
-        if(this.active_count == 0 && this.loading_data) this.loading_data.derenderer(this.loading_data.derender_param)
+        if(this.active_count == 0 && this.loading_data) this.loading_data.derenderer()
 
         return response_data
     }
@@ -241,7 +237,7 @@ export class API {
     /**
      * Send request and pass response data to callback after delay, another call to this function cancels last call and restarts time
      * @param {Object.<string,string>} data 
-     * @param {ObjectCallback} callback 
+     * @param {function} callback 
      * @param {number} delay 
      */
     sendDebouncedRequest(data,callback,delay) {

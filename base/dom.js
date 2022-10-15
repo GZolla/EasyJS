@@ -42,7 +42,7 @@ export function insertFirst(element, reference) {
 
 /**
  * Remove element from DOM
- * @param {Node} [element]
+ * @param {Node?} [element]
  */
 export function removeElement(element) {
     if(element && element.parentNode) {
